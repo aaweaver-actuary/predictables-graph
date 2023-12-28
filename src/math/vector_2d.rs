@@ -1,134 +1,97 @@
 use serde::{Deserialize, Serialize};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
-/// Returns true if the absolute difference between `a` and `b` is less than `epsilon`.
-/// This is used in the tests below to see angles of 2pi and 0 as equal.
-///
-/// # Parameters
-///
-/// * `a` - The first value to compare.
-/// * `b` - The second value to compare.
-/// * `epsilon` - The maximum difference between `a` and `b` for them to be considered equal.
-///
-/// # Returns
-///
-/// * `true` if the absolute difference between `a` and `b` is less than `epsilon`.
-/// * `false` otherwise.
-///
-/// ## Examples
-///
-/// ```
-/// use math::vector_2d::approx_equal;
-///
-/// let a = 0.0;
-/// let b = 2.0 * std::f64::cons::PI;
-/// let epsilon = 0.0001;
-/// assert_eq!(approx_equal(a, b, epsilon), true);
-/// ```
-///
-fn approx_equal(a: f64, b: f64, epsilon: f64) -> bool {
+pub fn approx_equal(a: f64, b: f64, epsilon: f64) -> bool {
     (a - b).abs() < epsilon
 }
 
-/// A 2D vector. This is a simple struct that represents a 2D vector.
-///
-/// # Attributes
-///
-/// * `x` - The x component of the vector.
-/// * `y` - The y component of the vector.
-///
-/// # Methods
-///
-/// * `from_xy` - Creates a new vector from the x and y components.
-/// * `from_theta` - Creates a new unit vector from an angle in radians.
-/// * `from_rtheta` - Creates a new vector from a radius and an angle in radians.
-/// * `add` - Adds two vectors together.
-/// * `sub` - Subtracts one vector from another.
-/// * `dot` - Calculates the dot product of two vectors.
-/// * `scale` - Scales a vector by a scalar.
-/// * `magnitude` - Calculates the magnitude of a vector.
-/// * `angle` - Calculates the angle of a vector.
-/// * `normalize` - Normalizes a vector.
-/// * `orthogonal` - Calculates a vector that is orthogonal to the original.
-/// * `orthonormal` - Calculates a vector that is orthogonal and normalized.
-/// * `project_on` - Projects a vector onto another vector.
-/// * `rotate` - Rotates a vector by an angle in radians.
-/// * `rotate_around` - Rotates a vector around another vector by an angle in radians.
-/// * `distance` - Calculates the distance between two vectors.
-/// * `linear_interpolation` - Calculates a linear interpolation between two vectors.
-///
-/// # Operators
-///
-/// * `+` - Adds two vectors together.
-/// * `-` - Subtracts one vector from another.
-/// * `*` - Calculates the dot product of two vectors or scales a vector by a scalar, depending on the types of the operands.
-/// * `/` - Scales a vector by a scalar.
-/// * `-` - Negates a vector.
-/// * `+=` - Adds two vectors together and assigns the result to the first vector.
-/// * `-=` - Subtracts one vector from another and assigns the result to the first vector.
-/// * `*=` - Calculates the dot product of two vectors or scales a vector by a scalar, depending on the types of the operands, and assigns the result to the first vector.
-/// * `/=` - Scales a vector by a scalar and assigns the result to the first vector.
-///
-/// # Examples
-///
-/// ```rust
-/// use math::vector_2d::Vector2D;
-///
-/// let v1 = Vector2D::from_xy(1.0, 2.0);
-/// let v2 = Vector2D::from_xy(3.0, 4.0);
-/// let v3 = v1 + v2;
-///
-/// println!("v3.x = {}", v3.x);
-/// println!("v3.y = {}", v3.y);
-/// ```
-///
-#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, PartialOrd)]
-pub struct Vector2D {
-    pub x: f64,
-    pub y: f64,
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, Eq, PartialEq, PartialOrd)]
+pub struct Vector2D<T> {
+    pub x: T,
+    pub y: T,
 }
 
-impl Vector2D {
-    pub fn from_xy(x: f64, y: f64) -> Vector2D {
+impl<
+        T: Copy
+            + Add<Output = T>
+            + Sub<Output = T>
+            + Mul<Output = T>
+            + Div<Output = T>
+            + Neg<Output = T>
+            + From<f64>,
+    > Vector2D<T>
+{
+    pub fn from_xy(x: T, y: T) -> Self {
         Vector2D { x, y }
     }
 
-    pub fn from_theta(angle: f64) -> Vector2D {
-        Vector2D {
-            x: angle.cos(),
-            y: angle.sin(),
-        }
-    }
-
-    pub fn from_rtheta(radius: f64, angle: f64) -> Vector2D {
-        Vector2D {
-            x: radius * angle.cos(),
-            y: radius * angle.sin(),
-        }
-    }
-
-    pub fn add(&self, other: &Vector2D) -> Vector2D {
+    pub fn add(&self, other: &Vector2D<T>) -> Vector2D<T> {
         Vector2D {
             x: self.x + other.x,
             y: self.y + other.y,
         }
     }
 
-    pub fn sub(&self, other: &Vector2D) -> Vector2D {
+    pub fn sub(&self, other: &Vector2D<T>) -> Vector2D<T> {
         Vector2D {
             x: self.x - other.x,
             y: self.y - other.y,
         }
     }
 
-    pub fn dot(&self, other: &Vector2D) -> f64 {
+    pub fn dot(&self, other: &Vector2D<T>) -> T {
         self.x * other.x + self.y * other.y
     }
 
-    pub fn scale(&self, scalar: f64) -> Vector2D {
+    pub fn scale(&self, scalar: T) -> Vector2D<T> {
         Vector2D {
             x: self.x * scalar,
             y: self.y * scalar,
+        }
+    }
+
+    pub fn orthogonal(&self) -> Vector2D<T> {
+        Vector2D {
+            x: -self.y,
+            y: self.x,
+        }
+    }
+
+    pub fn project_on(&self, other: &Vector2D<T>) -> Vector2D<T> {
+        let scalar = self.dot(other) / other.dot(other);
+        other.scale(scalar)
+    }
+}
+impl Vector2D<f64> {
+    pub fn from_rtheta(radius: f64, angle: f64) -> Vector2D<f64> {
+        Vector2D {
+            x: radius * angle.cos(),
+            y: radius * angle.sin(),
+        }
+    }
+
+    pub fn from_theta(angle: f64) -> Vector2D<f64> {
+        Vector2D {
+            x: angle.cos(),
+            y: angle.sin(),
+        }
+    }
+
+    pub fn rotate(&self, angle: f64) -> Vector2D<f64> {
+        let new_angle = self.angle() + angle;
+        let magnitude = self.magnitude();
+        Vector2D {
+            x: magnitude * new_angle.cos(),
+            y: magnitude * new_angle.sin(),
+        }
+    }
+
+    pub fn rotate_around(&self, angle: f64, other: &Vector2D<f64>) -> Vector2D<f64> {
+        let new_angle = self.sub(other).angle() + angle;
+        let magnitude = self.sub(other).magnitude();
+        Vector2D {
+            x: magnitude * new_angle.cos() + other.x,
+            y: magnitude * new_angle.sin() + other.y,
         }
     }
 
@@ -140,7 +103,11 @@ impl Vector2D {
         self.y.atan2(self.x)
     }
 
-    pub fn normalize(&self) -> Vector2D {
+    pub fn distance(&self, other: &Vector2D<f64>) -> f64 {
+        (self.sub(other)).magnitude()
+    }
+
+    pub fn normalize(&self) -> Vector2D<f64> {
         let magnitude = self.magnitude();
         if magnitude == 0.0 {
             return Vector2D { x: 0.0, y: 0.0 };
@@ -148,53 +115,36 @@ impl Vector2D {
         self.scale(1.0 / magnitude)
     }
 
-    pub fn orthogonal(&self) -> Vector2D {
-        Vector2D {
-            x: -self.y,
-            y: self.x,
-        }
-    }
-
-    pub fn orthonormal(&self) -> Vector2D {
+    pub fn orthonormal(&self) -> Vector2D<f64> {
         self.orthogonal().normalize()
     }
 
-    pub fn project_on(&self, other: &Vector2D) -> Vector2D {
-        let scalar = self.dot(other) / other.dot(other);
-        other.scale(scalar)
+    pub fn linear_interpolation(
+        start: &Vector2D<f64>,
+        end: &Vector2D<f64>,
+        t: f64,
+    ) -> Vector2D<f64> {
+        start.scale(1.0 - t) + end.scale(t)
     }
 
-    pub fn rotate(&self, angle: f64) -> Vector2D {
-        let new_angle = self.angle() + angle;
-        let magnitude = self.magnitude();
-        Vector2D {
-            x: magnitude * new_angle.cos(),
-            y: magnitude * new_angle.sin(),
-        }
-    }
-
-    pub fn rotate_around(&self, angle: f64, other: &Vector2D) -> Vector2D {
-        let new_angle = self.sub(other).angle() + angle;
-        let magnitude = self.sub(other).magnitude();
-        Vector2D {
-            x: magnitude * new_angle.cos() + other.x,
-            y: magnitude * new_angle.sin() + other.y,
-        }
-    }
-
-    pub fn distance(&self, other: &Vector2D) -> f64 {
-        (self.sub(other)).magnitude()
-    }
-
-    pub fn linear_interpolation(start: &Vector2D, end: &Vector2D, t: f64) -> Vector2D {
-        &start.scale(1.0 - t) + &end.scale(t)
+    pub fn relative_to(&self, other: &Vector2D<f64>) -> Vector2D<f64> {
+        self.sub(other)
     }
 }
 
-impl Add for Vector2D {
-    type Output = Vector2D;
+impl<
+        T: Copy
+            + Add<Output = T>
+            + Sub<Output = T>
+            + Mul<Output = T>
+            + Div<Output = T>
+            + Neg<Output = T>
+            + From<f64>,
+    > Add for Vector2D<T>
+{
+    type Output = Self;
 
-    fn add(self, other: Vector2D) -> Vector2D {
+    fn add(self, other: Self) -> Self::Output {
         Vector2D {
             x: self.x + other.x,
             y: self.y + other.y,
@@ -202,10 +152,35 @@ impl Add for Vector2D {
     }
 }
 
-impl<'a, 'b> Add<&'b Vector2D> for &'a Vector2D {
-    type Output = Vector2D;
+impl<
+        T: Copy
+            + Add<Output = T>
+            + Sub<Output = T>
+            + Mul<Output = T>
+            + Div<Output = T>
+            + Neg<Output = T>
+            + From<f64>,
+    > Sub for Vector2D<T>
+{
+    type Output = Self;
 
-    fn add(self, other: &'b Vector2D) -> Vector2D {
+    fn sub(self, other: Self) -> Self::Output {
+        Vector2D {
+            x: self.x - other.x,
+            y: self.y - other.y,
+        }
+    }
+}
+
+impl<
+        'a,
+        'b,
+        T: Copy + Add<Output = T> + Sub<Output = T> + Mul<Output = T> + Neg<Output = T> + From<f64>,
+    > Add<&'b Vector2D<T>> for &'a Vector2D<T>
+{
+    type Output = Vector2D<T>;
+
+    fn add(self, other: &'b Vector2D<T>) -> Vector2D<T> {
         Vector2D {
             x: self.x + other.x,
             y: self.y + other.y,
@@ -213,10 +188,15 @@ impl<'a, 'b> Add<&'b Vector2D> for &'a Vector2D {
     }
 }
 
-impl Sub<Vector2D> for Vector2D {
-    type Output = Vector2D;
+impl<
+        'a,
+        'b,
+        T: Copy + Add<Output = T> + Sub<Output = T> + Mul<Output = T> + Neg<Output = T> + From<f64>,
+    > Sub<&'b Vector2D<T>> for &'a Vector2D<T>
+{
+    type Output = Vector2D<T>;
 
-    fn sub(self, other: Vector2D) -> Vector2D {
+    fn sub(self, other: &'b Vector2D<T>) -> Vector2D<T> {
         Vector2D {
             x: self.x - other.x,
             y: self.y - other.y,
@@ -224,108 +204,114 @@ impl Sub<Vector2D> for Vector2D {
     }
 }
 
-impl<'a, 'b> Sub<&'b Vector2D> for &'a Vector2D {
-    type Output = Vector2D;
+impl<T> Mul<Vector2D<T>> for Vector2D<T>
+where
+    T: Mul<Output = T> + Add<Output = T> + Copy,
+{
+    type Output = T;
 
-    fn sub(self, other: &'b Vector2D) -> Vector2D {
-        Vector2D {
-            x: self.x - other.x,
-            y: self.y - other.y,
-        }
-    }
-}
-
-impl Mul<Vector2D> for Vector2D {
-    type Output = f64;
-
-    fn mul(self, other: Vector2D) -> f64 {
+    fn mul(self, other: Vector2D<T>) -> T {
+        // Dot product
         self.x * other.x + self.y * other.y
     }
 }
 
-impl<'a> Mul<f64> for &'a Vector2D {
-    type Output = Vector2D;
+impl<T> Mul<T> for Vector2D<T>
+where
+    T: Mul<Output = T> + Copy,
+{
+    type Output = Vector2D<T>;
 
-    fn mul(self, scalar: f64) -> Vector2D {
-        self.scale(scalar)
+    fn mul(self, scalar: T) -> Vector2D<T> {
+        // Scalar multiplication
+        Vector2D {
+            x: self.x * scalar,
+            y: self.y * scalar,
+        }
     }
 }
 
-impl Mul<Vector2D> for f64 {
-    type Output = Vector2D;
+impl<T> Div<T> for Vector2D<T>
+where
+    T: Div<Output = T> + Copy,
+{
+    type Output = Vector2D<T>;
 
-    fn mul(self, vector: Vector2D) -> Vector2D {
-        vector.scale(self)
+    fn div(self, scalar: T) -> Vector2D<T> {
+        Vector2D {
+            x: self.x / scalar,
+            y: self.y / scalar,
+        }
     }
 }
 
-impl<'a> Mul<&'a Vector2D> for f64 {
-    type Output = Vector2D;
+impl<'a, T> Div<T> for &'a Vector2D<T>
+where
+    T: Div<Output = T> + Copy,
+{
+    type Output = Vector2D<T>;
 
-    fn mul(self, vector: &'a Vector2D) -> Vector2D {
-        vector.scale(self)
+    fn div(self, scalar: T) -> Vector2D<T> {
+        Vector2D {
+            x: self.x / scalar,
+            y: self.y / scalar,
+        }
     }
 }
 
-impl Div<f64> for Vector2D {
-    type Output = Vector2D;
+impl<T> Neg for Vector2D<T>
+where
+    T: Mul<Output = T> + Copy + From<f64>,
+{
+    type Output = Vector2D<T>;
 
-    fn div(self, scalar: f64) -> Vector2D {
-        self.scale(1.0 / scalar)
+    fn neg(self) -> Vector2D<T> {
+        Vector2D {
+            x: self.x * T::from(-1.0),
+            y: self.y * T::from(-1.0),
+        }
     }
 }
 
-impl<'a> Div<f64> for &'a Vector2D {
-    type Output = Vector2D;
+impl<'a, T> Neg for &'a Vector2D<T>
+where
+    T: Mul<Output = T> + Copy + From<f64>,
+{
+    type Output = Vector2D<T>;
 
-    fn div(self, scalar: f64) -> Vector2D {
-        self.scale(1.0 / scalar)
+    fn neg(self) -> Vector2D<T> {
+        Vector2D {
+            x: self.x * T::from(-1.0),
+            y: self.y * T::from(-1.0),
+        }
     }
 }
 
-impl Neg for Vector2D {
-    type Output = Vector2D;
-
-    fn neg(self) -> Vector2D {
-        self.scale(-1.0)
+impl<T: Add<Output = T> + Copy> AddAssign for Vector2D<T> {
+    fn add_assign(&mut self, other: Vector2D<T>) {
+        self.x = self.x + other.x;
+        self.y = self.y + other.y;
     }
 }
 
-impl<'a> Neg for &'a Vector2D {
-    type Output = Vector2D;
-
-    fn neg(self) -> Vector2D {
-        self.scale(-1.0)
+impl<T: Sub<Output = T> + Copy> SubAssign for Vector2D<T> {
+    fn sub_assign(&mut self, other: Vector2D<T>) {
+        self.x = self.x - other.x;
+        self.y = self.y - other.y;
     }
 }
 
-impl AddAssign for Vector2D {
-    fn add_assign(&mut self, other: Vector2D) {
-        *self = self.add(other);
+impl<T: Mul<Output = T> + Copy> MulAssign<T> for Vector2D<T> {
+    fn mul_assign(&mut self, scalar: T) {
+        self.x = self.x * scalar;
+        self.y = self.y * scalar;
     }
 }
 
-impl SubAssign for Vector2D {
-    fn sub_assign(&mut self, other: Vector2D) {
-        *self = self.sub(other);
-    }
-}
-
-impl SubAssign<&Vector2D> for Vector2D {
-    fn sub_assign(&mut self, other: &Vector2D) {
-        *self = &*self - other;
-    }
-}
-
-impl MulAssign<f64> for Vector2D {
-    fn mul_assign(&mut self, scalar: f64) {
-        *self = self.scale(scalar);
-    }
-}
-
-impl DivAssign<f64> for Vector2D {
-    fn div_assign(&mut self, scalar: f64) {
-        *self = self.scale(1.0 / scalar);
+impl<T: Div<Output = T> + Copy> DivAssign<T> for Vector2D<T> {
+    fn div_assign(&mut self, scalar: T) {
+        self.x = self.x / scalar;
+        self.y = self.y / scalar;
     }
 }
 
@@ -393,7 +379,7 @@ mod tests {
         assert_eq!(v2.x, 2.0);
         assert_eq!(v2.y, 4.0);
 
-        let v3 = 2.0 * v1;
+        let v3 = v1 * 2.0;
         assert_eq!(v3.x, 2.0);
         assert_eq!(v3.y, 4.0);
 
@@ -499,5 +485,14 @@ mod tests {
         let v1 = Vector2D::from_rtheta(2.0, PI / 2.0);
         assert!(approx_equal(v1.x, 0.0, 1e-4));
         assert!(approx_equal(v1.y, 2.0, 1e-4));
+    }
+
+    #[test]
+    fn test_relative_to() {
+        let v1 = Vector2D::from_xy(1.0, 2.0);
+        let v2 = Vector2D::from_xy(3.0, 4.0);
+        let v3 = v1.relative_to(&v2);
+        assert_eq!(v3.x, -2.0);
+        assert_eq!(v3.y, -2.0);
     }
 }

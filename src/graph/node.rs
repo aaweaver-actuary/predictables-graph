@@ -1,11 +1,11 @@
-use crate::graph::vector2d::Vector2D;
+use crate::math::vector_2d::Vector2D;
 
 #[derive(Debug, Clone)]
 pub struct Node {
     pub id: u8,
     pub label: String,
-    pub position: Vector2D,
-    pub velocity: Vector2D,
+    pub position: Vector2D<f64>,
+    pub velocity: Vector2D<f64>,
     pub mass: f64,
     pub radius: f64,
     pub edge_color: String,
@@ -13,13 +13,28 @@ pub struct Node {
 }
 
 impl Node {
-    pub fn new(position: Vector2D, mass: f64) -> NodeBuilder {
+    /// Create a new NodeBuilder with default values. The NodeBuilder can be used to create a Node
+    /// with custom values.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use crate::graph::node::Node;
+    ///
+    ///
+    /// let node = Node::new()
+    ///     .id(1)
+    ///     .label("test")
+    ///     .build(); // This creates a Node with default values except for id and label
+    /// ```
+    #[allow(clippy::new_ret_no_self)]
+    pub fn new() -> NodeBuilder {
         NodeBuilder {
             id: 0,
             label: "".to_string(),
-            position,
-            mass,
-            velocity: Vector2D::new(0.0, 0.0),
+            position: Vector2D::from_xy(1.0, 1.0),
+            mass: 1.0,
+            velocity: Vector2D::from_xy(0.0, 0.0),
             radius: 1.0,
             edge_color: "black".to_string(),
             fill: "transparent".to_string(),
@@ -27,11 +42,17 @@ impl Node {
     }
 }
 
+impl Default for Node {
+    fn default() -> Node {
+        Node::new().build()
+    }
+}
+
 pub struct NodeBuilder {
     id: u8,
     label: String,
-    position: Vector2D,
-    velocity: Vector2D,
+    position: Vector2D<f64>,
+    velocity: Vector2D<f64>,
     mass: f64,
     radius: f64,
     edge_color: String,
@@ -44,12 +65,22 @@ impl NodeBuilder {
         self
     }
 
+    pub fn mass(mut self, mass: f64) -> Self {
+        self.mass = mass;
+        self
+    }
+
     pub fn label(mut self, label: &str) -> Self {
         self.label = label.to_string();
         self
     }
 
-    pub fn velocity(mut self, velocity: Vector2D) -> Self {
+    pub fn position(mut self, position: Vector2D<f64>) -> Self {
+        self.position = position;
+        self
+    }
+
+    pub fn velocity(mut self, velocity: Vector2D<f64>) -> Self {
         self.velocity = velocity;
         self
     }
@@ -71,6 +102,8 @@ impl NodeBuilder {
 
     pub fn build(self) -> Node {
         Node {
+            id: self.id,
+            label: self.label,
             position: self.position,
             velocity: self.velocity,
             mass: self.mass,
@@ -82,26 +115,29 @@ impl NodeBuilder {
 }
 
 #[cfg(test)]
-mod tests {
+pub mod tests {
     use super::*;
+    use crate::math::vector_2d::Vector2D;
 
     #[test]
-    fn test_node_builder() {
-        let position = Vector2D::new(1.0, 2.0);
-        let velocity = Vector2D::new(3.0, 4.0);
+    pub fn test_node_builder() {
+        let position = Vector2D::from_xy(1.0, 2.0);
+        let velocity = Vector2D::from_xy(3.0, 4.0);
 
         // Test that the NodeBuilder works as intended
-        let node = Node::new(position.clone(), 5.0)
+        let node = Node::new()
             .id(1)
+            .position(position)
+            .mass(5.0)
             .label("test")
-            .velocity(velocity.clone())
+            .velocity(velocity)
             .radius(6.0)
             .edge_color("red")
             .fill("blue")
             .build();
 
         // Test that the default values are correctly set if no builder methods are called
-        let node2 = Node::new(Vector2D::new(1.0, 1.0), Vector2D::new(-2.0, 3.0));
+        let node2 = Node::new().build();
 
         // NodeBuilder checks
         assert_eq!(node.id, 1);
@@ -116,8 +152,8 @@ mod tests {
         // Default values check
         assert_eq!(node2.id, 0);
         assert_eq!(node2.label, "".to_string());
-        assert_eq!(node2.position, Vector2D::new(1.0, 1.0));
-        assert_eq!(node2.velocity, Vector2D::new(-2.0, 3.0));
+        assert_eq!(node2.position, Vector2D::from_xy(1.0, 1.0));
+        assert_eq!(node2.velocity, Vector2D::from_xy(-2.0, 3.0));
         assert_eq!(node2.mass, 1.0);
         assert_eq!(node2.radius, 1.0);
         assert_eq!(node2.edge_color, "black".to_string());
