@@ -130,6 +130,36 @@ impl Vector2D<f64> {
     pub fn relative_to(&self, other: &Vector2D<f64>) -> Vector2D<f64> {
         self.sub(other)
     }
+
+    /// Round the vector **componentwise** to the nearest n decimal places
+    /// ### Parameters
+    /// - `n`: The number of decimal places to round to
+    /// ### Returns
+    /// A new vector with the rounded components
+    /// ### Examples
+    /// ```
+    /// use crate::math::vector_2d::Vector2D;
+    /// let v1 = Vector2D::from_xy(1.234, 2.345);
+    /// let v2 = v1.round(2);
+    /// println!("{:?}", v2);
+    /// ```
+    /// #### Output
+    /// ```text
+    /// Vector2D { x: 1.23, y: 2.35 }
+    /// ```
+    /// ### Notes
+    /// - This method is useful for rounding vectors to a certain number of decimal places
+    /// - This method is mainly useful for testing purposes
+    /// - This method does not pay close attention to floating point errors, and assumes that the
+    ///   `n` parameter is small, say less than 5, so that the floating point errors are not
+    ///   significant
+    pub fn round(&self, n: usize) -> Vector2D<f64> {
+        let order_of_mag: f64 = 10.0_f64.powi(n as i32);
+        Vector2D {
+            x: order_of_mag * self.x.round() / order_of_mag,
+            y: order_of_mag * self.y.round() / order_of_mag,
+        }
+    }
 }
 
 impl<

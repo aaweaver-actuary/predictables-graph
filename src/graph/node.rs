@@ -2,7 +2,7 @@ use crate::math::vector_2d::Vector2D;
 
 #[derive(Debug, Clone)]
 pub struct Node {
-    pub id: u8,
+    pub id: usize,
     pub label: String,
     pub position: Vector2D<f64>,
     pub velocity: Vector2D<f64>,
@@ -71,7 +71,7 @@ impl Default for Node {
 }
 
 pub struct NodeBuilder {
-    id: u8,
+    id: usize,
     label: String,
     position: Vector2D<f64>,
     velocity: Vector2D<f64>,
@@ -82,7 +82,7 @@ pub struct NodeBuilder {
 }
 
 impl NodeBuilder {
-    pub fn id(mut self, id: u8) -> Self {
+    pub fn id(mut self, id: usize) -> Self {
         self.id = id;
         self
     }
