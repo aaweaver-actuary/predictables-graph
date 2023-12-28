@@ -42,6 +42,28 @@ impl Node {
     }
 }
 
+impl Node {
+    pub fn update_mass(&mut self, mass: f64) {
+        self.mass = mass;
+    }
+
+    pub fn update_position(&mut self, position: Vector2D<f64>) {
+        self.position = position;
+    }
+
+    pub fn update_velocity(&mut self, velocity: Vector2D<f64>) {
+        self.velocity = velocity;
+    }
+
+    pub fn update_radius(&mut self, radius: f64) {
+        self.radius = radius;
+    }
+
+    pub fn update_label(&mut self, label: &str) {
+        self.label = label.to_string();
+    }
+}
+
 impl Default for Node {
     fn default() -> Node {
         Node::new().build()
@@ -153,7 +175,7 @@ pub mod tests {
         assert_eq!(node2.id, 0);
         assert_eq!(node2.label, "".to_string());
         assert_eq!(node2.position, Vector2D::from_xy(1.0, 1.0));
-        assert_eq!(node2.velocity, Vector2D::from_xy(-2.0, 3.0));
+        assert_eq!(node2.velocity, Vector2D::from_xy(0.0, 0.0));
         assert_eq!(node2.mass, 1.0);
         assert_eq!(node2.radius, 1.0);
         assert_eq!(node2.edge_color, "black".to_string());

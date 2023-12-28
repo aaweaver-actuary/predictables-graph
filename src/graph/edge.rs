@@ -1,3 +1,4 @@
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub struct Edge {
     pub node1_idx: usize, // Index of the first node
     pub node2_idx: usize, // Index of the second node
