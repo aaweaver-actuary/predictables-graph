@@ -1,0 +1,46 @@
+name: Rust
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build
+      run: cargo build --verbose
+    - name: Run tests
+      run: cargo test --verbose
+            - name: Clippy Action
+  # You may pin to the exact commit or the version.
+  # uses: auguwu/clippy-action@4f4a1dcb5f1878376a6232d4112953f3d36c8439
+  uses: auguwu/clippy-action@1.3.0
+  with:
+    # List of arguments to apply after `cargo clippy`, but before `--` like `--tests`.
+    check-args: # optional, default is 
+    # List (seperated by ',') of warnings to set. (eq. to the -W/--warn flag in `cargo clippy`)
+    warn: # optional, default is 
+    # List (seperated by ',') of allowed lints to set. (eq. to the -A/--allow flag in `cargo clippy`)
+    allow: # optional, default is 
+    # List (seperated by ',') of denied lints to set. (eq. to the -D/--deny flag in `cargo clippy`)
+    deny: # optional, default is 
+    # List (seperated by ',') of forbidden lints to set. (eq. to the -F/--forbid flag in `cargo clippy`)
+    forbid: # optional, default is 
+    # If the `--all-features` flag should be included
+    all-features: # optional, default is false
+    # Extra arguments to append to the `cargo clippy` command.
+    args: # optional, default is 
+    # Valid, relative or absolute path to the working directory to execute `cargo clippy` from.
+    working-directory: # optional, default is 
+    # GitHub token for authenticating requests to GitHub
+    token: 
+          
