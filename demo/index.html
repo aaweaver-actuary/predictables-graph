@@ -2,18 +2,47 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Graph Simulation</title>
+    <title>Rust WASM Graph Simulation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
-      /* Add styles for your graph container */
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+
       #graph {
-        width: 800px;
-        height: 600px;
-        border: 1px solid black;
+        width: 100vw;
+        height: 100vh;
       }
     </style>
   </head>
   <body>
-    <div id="graph"></div>
-    <script src="script.js"></script>
+    <div id="graph"><!-- This div will host your graph visualization --></div>
+
+    <!-- Include the generated JavaScript file to load your WASM module -->
+    <script type="module">
+      import init, {
+        buildSimulation,
+        runSimulationStep,
+      } from '../pkg/predictables_graph.js';
+
+      async function run() {
+        await init(); // Initialize the WASM module
+
+        // This function is now available and can be called to run the simulation step
+        let simStr = buildSimulation();
+        console.log(simStr);
+
+        // Convert turn sim string to JSON then to JS object
+        let sim = JSON.parse(simStr);
+        console.log(sim);
+
+        sim = JSON.parse(runSimulationStep(simStr));
+        console.log(sim);
+      }
+
+      run();
+    </script>
   </body>
 </html>

@@ -1,6 +1,8 @@
+use serde::{Deserialize, Serialize};
+
 use crate::math::vector_2d::Vector2D;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct Node {
     pub id: usize,
     pub label: String,
@@ -70,6 +72,7 @@ impl Default for Node {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct NodeBuilder {
     id: usize,
     label: String,

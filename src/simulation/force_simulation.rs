@@ -1,9 +1,11 @@
 use crate::graph::{edge::Edge, node::Node};
 use crate::math::vector_2d::Vector2D;
 
+use serde::{Deserialize, Serialize};
+
 use std::ops::{Add, Mul, Sub};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct ForceSimulation {
     nodes: Vec<Node>,
     edges: Vec<Edge>,
@@ -224,11 +226,11 @@ impl ForceSimulation {
     }
 
     /// Calculates all pairwise forces between nodes.
-    fn calculate_forces(&mut self) {
+    fn calculate_forces(&mut self) -> Vec<Vec<Vector2D<f64>>> {
         // Initialize a matrix of vectors to store the total forces that each node exerts on each
         // other node. The matrix is anti-symmetrical, so the force that node i exerts on node j is
         // the negative of the force that node j exerts on node i.
-        let total_forces: Vec<Vec<Vector2D<f64>>> =
+        let mut total_forces: Vec<Vec<Vector2D<f64>>> =
             vec![vec![Vector2D::from_xy(0.0, 0.0); self.get_n_nodes()]; self.get_n_nodes()];
 
         // Loop over all pairs i, j of nodes
@@ -269,8 +271,8 @@ impl ForceSimulation {
         let delta_time = self.time_step;
 
         // Allocate memory for the total change in position and velocity vectors & init to 0
-        let delta_p: vec![vec![Vector2D::from_xy(0.0, 0.0); self.get_n_nodes()]];
-        let delta_v: vec![vec![Vector2D::from_xy(0.0, 0.0); self.get_n_nodes()]];
+        let mut delta_p = vec![vec![Vector2D::from_xy(0.0, 0.0); self.get_n_nodes()]];
+        let mut delta_v = vec![vec![Vector2D::from_xy(0.0, 0.0); self.get_n_nodes()]];
 
         // Loop over all pairs i, j of nodes, adding the change in position and velocity vectors
         // for each pair to get the total change in position and velocity vectors
@@ -278,23 +280,27 @@ impl ForceSimulation {
             for j in 0..(self.get_n_nodes() - 1) {
                 let weight = self.get_edge_connecting_nodes(i, j).unwrap().weight;
 
-                // Calculate the change in position of node j due to the force that node i exerts
-                // on node j
-                delta_p[i] += self.chg_in_position_from_force_n1_exerts_on_n2(
+                // Calculate the change in position of node j due to the force that node i exerts on node j
+                let chg_in_position = self.chg_in_position_from_force_n1_exerts_on_n2(
                     &self.nodes[i],
                     &self.nodes[j],
                     weight,
                     delta_time,
                 );
+                for element in delta_p[i].iter_mut() {
+                    *element += chg_in_position;
+                }
 
-                // Calculate the change in velocity of node j due to the force that node i exerts
-                // on node j
-                delta_v[i] += self.chg_in_velocity_from_force_n1_exerts_on_n2(
+                // Calculate the change in velocity of node j due to the force that node i exerts on node j
+                let chg_in_velocity = self.chg_in_velocity_from_force_n1_exerts_on_n2(
                     &self.nodes[i],
                     &self.nodes[j],
                     weight,
                     delta_time,
                 );
+                for element in delta_v[i].iter_mut() {
+                    *element += chg_in_velocity;
+                }
             }
         }
 
@@ -308,8 +314,12 @@ impl ForceSimulation {
 
         // Loop over all nodes, updating their positions and velocities
         for i in 0..self.get_n_nodes() {
-            self.nodes[i].position += delta_p[i];
-            self.nodes[i].velocity += delta_v[i];
+            for delta in &delta_p[i] {
+                self.nodes[i].position += *delta;
+            }
+            for delta in &delta_v[i] {
+                self.nodes[i].velocity += *delta;
+            }
         }
     }
 }
@@ -336,9 +346,10 @@ pub mod test {
             .build();
         let nodes: Vec<Node> = vec![node1, node2, node3];
 
-        let edge1 = Edge::new(0, 1, 1.0);
-        let edge2 = Edge::new(0, 2, 2.0);
-        let edge3 = Edge::new(1, 2, 3.0);
+        let edge1 = Edge::new().node1_idx(0).node2_idx(1).weight(1.0).build();
+        let edge2 = Edge::new().node1_idx(0).node2_idx(2).weight(2.0).build();
+        let edge3 = Edge::new().node1_idx(1).node2_idx(2).weight(3.0).build();
+
         let edges: Vec<Edge> = vec![edge1, edge2, edge3];
 
         (nodes, edges)

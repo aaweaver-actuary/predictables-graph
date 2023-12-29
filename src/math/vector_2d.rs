@@ -25,6 +25,13 @@ impl<
         Vector2D { x, y }
     }
 
+    pub fn new_at_origin() -> Self {
+        Vector2D {
+            x: T::from(0.0),
+            y: T::from(0.0),
+        }
+    }
+
     pub fn add(&self, other: &Vector2D<T>) -> Vector2D<T> {
         Vector2D {
             x: self.x + other.x,
