@@ -5,7 +5,7 @@ pub fn approx_equal(a: f64, b: f64, epsilon: f64) -> bool {
     (a - b).abs() < epsilon
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Copy, Eq, PartialEq, PartialOrd)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, Eq, PartialEq, PartialOrd, Default)]
 pub struct Vector2D<T> {
     pub x: T,
     pub y: T,

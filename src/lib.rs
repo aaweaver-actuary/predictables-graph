@@ -24,13 +24,14 @@ fn get_nodes() -> Vec<Node> {
         nodes.push(
             Node::new()
                 .id(i + 1)
-                .label(&format!("Node {}", i + 1))
+                .label(format!("Node {}", i + 1))
                 .position(Vector2D {
                     x: rng.gen_range(-1.0..1.0),
                     y: rng.gen_range(-1.0..1.0),
                 }) // random position - between -1 and 1
                 .velocity(Vector2D::new_at_origin()) // start with no velocity
-                .build(),
+                .build()
+                .unwrap(),
         );
     }
     nodes
@@ -49,7 +50,8 @@ fn get_edges(nodes: &Vec<Node>) -> Vec<Edge> {
                     .node1_idx(i)
                     .node2_idx(j)
                     .weight(rng.gen_range(0.5..1.5)) // random weight between 0.5 and 1.5
-                    .build(),
+                    .build()
+                    .unwrap(),
             );
         }
     }
@@ -64,9 +66,8 @@ pub fn build_simulation() -> String {
 
     // let serial_nodes = serde_json::to_string(&nodes).unwrap();
     // let serial_edges = serde_json::to_string(&edges).unwrap();
-    let serial_sim = serde_json::to_string(&sim).unwrap();
 
-    serial_sim
+    serde_json::to_string(&sim).unwrap()
 }
 
 #[wasm_bindgen]

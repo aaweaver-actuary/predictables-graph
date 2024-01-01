@@ -331,26 +331,29 @@ pub mod test {
     fn setup() -> (Vec<Node>, Vec<Edge>) {
         let node1 = Node::new()
             .id(1)
-            .label("Node 1")
+            .label("Node 1".to_owned())
             .position(Vector2D::from_xy(0.0, 0.0))
             .build();
+
         let node2 = Node::new()
             .id(2)
-            .label("Node 2")
+            .label("Node 2".to_owned())
             .position(Vector2D::from_xy(1.0, 0.0))
             .build();
+
         let node3 = Node::new()
             .id(3)
-            .label("Node 3")
+            .label("Node 3".to_owned())
             .position(Vector2D::from_xy(0.0, 1.0))
             .build();
-        let nodes: Vec<Node> = vec![node1, node2, node3];
+
+        let nodes: Vec<Node> = vec![node1.unwrap(), node2.unwrap(), node3.unwrap()];
 
         let edge1 = Edge::new().node1_idx(0).node2_idx(1).weight(1.0).build();
         let edge2 = Edge::new().node1_idx(0).node2_idx(2).weight(2.0).build();
         let edge3 = Edge::new().node1_idx(1).node2_idx(2).weight(3.0).build();
 
-        let edges: Vec<Edge> = vec![edge1, edge2, edge3];
+        let edges: Vec<Edge> = vec![edge1.unwrap(), edge2.unwrap(), edge3.unwrap()];
 
         (nodes, edges)
     }
